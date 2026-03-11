@@ -150,6 +150,7 @@ export interface CertificateSubmission {
   studentId: string; // regNo
   studentUid: string;
   studentName: string;
+  department: string;
   subject: string;
   certificateTitle: string;
   platform: string;

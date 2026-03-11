@@ -29,12 +29,12 @@ export const Header: React.FC = () => {
   ];
 
   const adminLinks = [
-    { name: 'Command Center', href: '/admin' },
-    { name: 'Subjects', href: '/admin/subjects' },
-    { name: 'Resources', href: '/admin/resources' },
-    { name: 'Preparation', href: '/admin/preparation' },
+    { name: 'Command Center', href: '/admin-panel' },
+    { name: 'Subjects', href: '/admin-panel/subjects' },
+    { name: 'Resources', href: '/admin-panel/resources' },
+    { name: 'Preparation', href: '/admin-panel/preparation' },
     { name: 'Events', href: '/events' },
-    { name: 'Requests', href: '/admin/requests' },
+    { name: 'Requests', href: '/admin-panel/requests' },
     { name: 'Leaderboard', href: '/leaderboard' },
   ];
 
@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-20">
           {/* Logo and Title */}
           <div className="flex items-center space-x-10">
-            <Link href={isAdmin ? "/admin" : "/dashboard"} className="flex items-center space-x-3 group">
+            <Link href={isAdmin ? "/admin-panel" : "/dashboard"} className="flex items-center space-x-3 group">
               <Image src="/logo.png" alt="Logo" width={100} height={100} />
               <div className="hidden lg:block">
                 <div className={`text-lg font-bold leading-none ${isAdmin ? 'text-white' : 'text-slate-900'}`}>MSEC DIGITAL LIBRARY</div>
@@ -72,7 +72,7 @@ export const Header: React.FC = () => {
                 </Link>
               ))}
               {isAdmin && (
-                <Link href="/admin/subjects/new">
+                <Link href="/admin-panel/subjects/new">
                   <Button variant="primary" size="sm" className="ml-4 rounded-xl font-black uppercase text-[10px] tracking-widest px-5 shadow-lg shadow-indigo-600/30">
                     + Create
                   </Button>

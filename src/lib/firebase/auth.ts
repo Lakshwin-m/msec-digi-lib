@@ -16,7 +16,7 @@ const googleProvider = new GoogleAuthProvider();
 /**
  * Sign in with Google - Restricted to @msec.edu.in domain
  */
-export const signInWithGoogle = async (): Promise<User | null> => {
+export const signInWithGoogle = async (forcedRole?: 'student' | 'admin'): Promise<User | null> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const firebaseUser = result.user;
@@ -40,7 +40,7 @@ export const signInWithGoogle = async (): Promise<User | null> => {
       registerNumber: firebaseUser.email.split('@')[0].toUpperCase(),
       email: firebaseUser.email,
       name: firebaseUser.displayName || 'MSEC Member',
-      role: 'student' as const, // Default role for Google sign-in
+      role: forcedRole || 'student' as const, // Default role or forced role
       department: 'General',   // Default department
       dob: '00000000',          // Placeholder for Google-based users
       points: 0,
@@ -62,7 +62,14 @@ export const signInWithGoogle = async (): Promise<User | null> => {
       updatedAt: new Date()
     };
   } catch (error: any) {
+    console.error('[Google-IDP] Sign-In Error:', error);
     if (error.code === 'auth/popup-closed-by-user') return null;
+    
+    // Provide user friendly message for permission errors
+    if (error.code === 'permission-denied' || (error.message && error.message.includes('permission'))) {
+      throw new Error('Firestore Permissions Error: Did you apply the security rules? ' + error.message);
+    }
+    
     throw new Error(error.message || 'Google Sign-In failed');
   }
 };
@@ -291,8 +298,13 @@ export const getCurrentUser = async (): Promise<User | null> => {
       completedCertifications: userData.completedCertifications || [],
       weeklyActivity: userData.weeklyActivity || [],
     };
-  } catch (error) {
-    console.error('Error fetching user data:', error);
+  } catch (error: any) {
+    // If it's a permission error, it's very likely the security rules aren't applied or user document is missing
+    if (error.code === 'permission-denied') {
+      console.error('🔥 CRITICAL: Firestore Security Rules violation fetching user data.', error);
+    } else {
+      console.error('Error fetching user data:', error);
+    }
     return null;
   }
 };

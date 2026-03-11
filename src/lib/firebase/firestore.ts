@@ -76,8 +76,13 @@ export const getSubjectById = async (id: string): Promise<Subject | null> => {
   } as Subject;
 };
 
-export const getAllSubjects = async (): Promise<Subject[]> => {
-  const q = query(collection(db, 'subjects'), orderBy('semester'), orderBy('name'));
+export const getAllSubjects = async (department?: string): Promise<Subject[]> => {
+  let q = query(collection(db, 'subjects'), orderBy('semester'), orderBy('name'));
+  
+  if (department && department !== 'General') {
+    q = query(collection(db, 'subjects'), where('department', '==', department), orderBy('semester'), orderBy('name'));
+  }
+  
   const snapshot = await getDocs(q);
 
   return snapshot.docs.map((doc) => {
@@ -319,11 +324,19 @@ export const getAllRequests = async (): Promise<Request[]> => {
   });
 };
 
-export const getPendingRequests = async (): Promise<Request[]> => {
-  const q = query(
+export const getPendingRequests = async (department?: string): Promise<Request[]> => {
+  let q = query(
     collection(db, 'requests'),
     where('status', '==', 'pending')
   );
+
+  if (department && department !== 'General') {
+    q = query(
+      collection(db, 'requests'),
+      where('status', '==', 'pending'),
+      where('department', '==', department)
+    );
+  }
   const snapshot = await getDocs(q);
 
   const requests = snapshot.docs.map((doc) => {
@@ -515,6 +528,7 @@ export const completeTestAction = async (
 export const getLeaderboard = async (limitCount = 5): Promise<User[]> => {
   const q = query(
     collection(db, 'users'), 
+    where('role', '==', 'student'), // Only show students
     orderBy('points', 'desc'), 
     limit(limitCount)
   );
@@ -579,7 +593,12 @@ export const updateUserStreak = async (userId: string, additionalPoints: number 
           points += 10; // Consecutive day bonus
           needsUpdate = true;
         } else if (diffDays > 1) {
-          newStreak = 1; // Streak reset but active today
+          // Streak broken: Reset to 0 unless they are performing an action now
+          newStreak = additionalPoints > 0 ? 1 : 0;
+          needsUpdate = true;
+        } else if (diffDays === 0 && additionalPoints > 0 && newStreak === 0) {
+          // If they were at 0 (from a previous visit today or a brand new reset), and now doing an action
+          newStreak = 1;
           needsUpdate = true;
         }
         // Same day (0) keeps existing streak
@@ -687,11 +706,19 @@ export const getCertificatesByUser = async (userId: string): Promise<Certificate
   return certs.sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
 };
 
-export const getCertificatesByStatus = async (status: string): Promise<CertificateSubmission[]> => {
-  const q = query(
+export const getCertificatesByStatus = async (status: string, department?: string): Promise<CertificateSubmission[]> => {
+  let q = query(
     collection(db, 'certificate_submissions'),
     where('status', '==', status)
   );
+
+  if (department && department !== 'General') {
+    q = query(
+      collection(db, 'certificate_submissions'),
+      where('status', '==', status),
+      where('department', '==', department)
+    );
+  }
   
   const snapshot = await getDocs(q);
   const certs = snapshot.docs.map(doc => {

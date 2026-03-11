@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { LoginForm } from '@/components/auth/LoginForm';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -68,11 +69,19 @@ export default function LoginPage() {
 
           <div className="bg-slate-50/50 p-1 rounded-2xl border border-slate-100">
             <div className="bg-white p-8 rounded-[calc(1rem-2px)] border border-slate-100 shadow-sm">
-              <LoginForm />
+              <LoginForm hideToggle={true} />
             </div>
           </div>
 
-        
+          <div className="mt-8 text-center pt-8 border-t border-slate-100">
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-4">Institutional Management</p>
+            <Link 
+              href="/admin"
+              className="inline-block px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all border border-slate-200 hover:border-indigo-100"
+            >
+              Admin Login
+            </Link>
+          </div>
         </div>
       </div>
     </div>

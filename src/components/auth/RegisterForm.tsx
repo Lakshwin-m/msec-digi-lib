@@ -6,14 +6,18 @@ import { signUpWithDetails, signInWithGoogle } from '@/lib/firebase/auth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
-export const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  forceRole?: 'student' | 'admin';
+}
+
+export const RegisterForm: React.FC<RegisterFormProps> = ({ forceRole }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     registerNumber: '',
     department: '',
-    role: 'student' as 'student' | 'admin',
+    role: forceRole || 'student' as 'student' | 'admin',
     dob: '', // Password
   });
   const [error, setError] = useState('');
@@ -26,7 +30,7 @@ export const RegisterForm: React.FC = () => {
 
     try {
       await signUpWithDetails(formData);
-      router.push('/dashboard');
+      router.push(formData.role === 'admin' ? '/admin-panel' : '/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -88,35 +92,37 @@ export const RegisterForm: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
-            Identity Role
-          </label>
-          <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100">
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, role: 'student' })}
-              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                formData.role === 'student'
-                  ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, role: 'admin' })}
-              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                formData.role === 'admin'
-                  ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Admin
-            </button>
+        {!forceRole && (
+          <div>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+              Identity Role
+            </label>
+            <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, role: 'student' })}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  formData.role === 'student'
+                    ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Student
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, role: 'admin' })}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  formData.role === 'admin'
+                    ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                Admin
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <Input
           label="Password (DOB)"
@@ -153,8 +159,8 @@ export const RegisterForm: React.FC = () => {
         onClick={async () => {
           setError('');
           try {
-            await signInWithGoogle();
-            router.push('/dashboard');
+            await signInWithGoogle(forceRole);
+            router.push(forceRole === 'admin' ? '/admin-panel' : '/dashboard');
           } catch (err: any) {
             setError(err.message);
           }

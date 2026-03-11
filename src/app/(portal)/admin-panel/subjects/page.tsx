@@ -67,7 +67,7 @@ export default function ManageSubjectsPage() {
             </p>
           </div>
         </div>
-        <Link href="/admin/subjects/new">
+        <Link href="/admin-panel/subjects/new">
           <Button variant="primary" className="rounded-2xl font-black uppercase text-xs tracking-widest px-10 py-8 shadow-2xl shadow-indigo-600/20">
             + New Subject
           </Button>
@@ -109,7 +109,7 @@ export default function ManageSubjectsPage() {
                   </span>
                 </div>
                 <div className="col-span-2 flex justify-end items-center space-x-3">
-                  <Link href={`/admin/subjects/edit/${subject.id}`}>
+                  <Link href={`/admin-panel/subjects/edit/${subject.id}`}>
                     <Button variant="outline" size="sm" className="rounded-xl border-slate-100 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 uppercase text-[10px] font-black tracking-widest">
                       Audit
                     </Button>

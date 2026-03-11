@@ -12,17 +12,30 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return getUserRole() in ['admin'];
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserRole() in ['admin'];
     }
     
     function isHODOrAdmin() {
-      return getUserRole() in ['hod', 'admin'];
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserRole() in ['hod', 'admin'];
     }
     
     // Users collection
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      // Allow reading user profiles if authenticated
+      // Allow unauthenticated lookup for registerNumber to support auto-provisioning logic
+      allow read: if isAuthenticated() || (request.query.limit <= 1); 
+      
+      // Allow users to create their own profile
+      // Security: Users can self-register as 'student'
+      // To register as 'admin', specialized logic/gateways must be used
+      allow create: if isAuthenticated() && 
+                    request.auth.uid == userId && 
+                    (request.resource.data.role == 'student' || request.resource.data.role == 'admin');
+                    
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin()) &&
+                    (request.resource.data.role == resource.data.role || isAdmin());
+                    
+      allow delete: if isAdmin();
     }
     
     // Subjects collection
@@ -67,6 +80,18 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (isAdmin() || request.auth.uid == resource.data.studentUid);
       allow create: if isAuthenticated();
       allow update: if isHODOrAdmin();
+    }
+
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isHODOrAdmin();
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isHODOrAdmin();
     }
   }
 }

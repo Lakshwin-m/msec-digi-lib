@@ -19,7 +19,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && user) {
       if (user.role === 'admin' || user.role === 'hod' || user.role === 'faculty') {
-        router.push('/admin');
+        router.push('/admin-panel');
         return;
       }
     }

@@ -23,11 +23,12 @@ export default function AdminPage() {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
+        const dept = user?.department;
         const [pending, subjects, topUsers, topCerts] = await Promise.all([
-          getPendingRequests(),
-          getAllSubjects(),
-          getLeaderboard(50), // Get more for stats
-          getCertificatesByStatus('pending')
+          getPendingRequests(dept),
+          getAllSubjects(dept),
+          getLeaderboard(50), 
+          getCertificatesByStatus('pending', dept)
         ]);
         setPendingCount(pending.length);
         setSubjectCount(subjects.length);
@@ -82,11 +83,11 @@ export default function AdminPage() {
   }
 
   const quickActions = [
-    { title: 'Subjects', desc: 'Curate the curriculum', href: '/admin/subjects', initial: 'S', color: 'indigo' },
-    { title: 'Resources', desc: 'Manage Drive links', href: '/admin/resources', initial: 'R', color: 'emerald' },
-    { title: 'Approvals', desc: 'Process student needs', href: '/admin/requests', initial: 'A', color: 'amber' },
-    { title: 'Certifications', desc: 'Verify industry credentials', href: '/admin/certifications', initial: 'C', color: 'emerald' },
-    { title: 'Preparation', desc: 'Gate & Study Hub', href: '/admin/preparation', initial: 'P', color: 'rose' },
+    { title: 'Subjects', desc: 'Curate the curriculum', href: '/admin-panel/subjects', initial: 'S', color: 'indigo' },
+    { title: 'Resources', desc: 'Manage Drive links', href: '/admin-panel/resources', initial: 'R', color: 'emerald' },
+    { title: 'Approvals', desc: 'Process student needs', href: '/admin-panel/requests', initial: 'A', color: 'amber' },
+    { title: 'Certifications', desc: 'Verify industry credentials', href: '/admin-panel/certifications', initial: 'C', color: 'emerald' },
+    { title: 'Preparation', desc: 'Gate & Study Hub', href: '/admin-panel/preparation', initial: 'P', color: 'rose' },
     { title: 'Trends', desc: 'Latest Tech Shifts', href: '/trends', initial: 'T', color: 'slate' },
     { title: 'Semesters', href: '/semesters', initial: 'M', color: 'indigo' }
   ];
@@ -96,28 +97,38 @@ export default function AdminPage() {
       {/* Premium Admin Header */}
       <section className="relative overflow-hidden rounded-[4rem] p-12 md:p-20 bg-slate-900 text-white shadow-3xl shadow-slate-900/40">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 -mr-72 -mt-72 rounded-full blur-[120px]"></div>
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-16">
-          <div className="max-w-2xl">
-            
-            
-            <p className="text-3xl text-slate-400 font-medium leading-relaxed max-w-xl">
-              Hello, Administrator <span className="text-white font-black">{user?.name}</span>. 
-            </p>
+        <div className="relative z-10">
+          <div className="mb-6 inline-flex items-center space-x-2 bg-indigo-500/20 text-indigo-300 px-5 py-2 rounded-2xl border border-indigo-500/30">
+            <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Department: {user?.department || 'Global'}</span>
           </div>
-
           
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4 uppercase italic">
+            Admin Panel
+          </h1>
+          <p className="text-3xl text-slate-400 font-medium leading-relaxed max-w-xl">
+            Hello, Administrator <span className="text-white font-black">{user?.name}</span>. 
+          </p>
         </div>
       </section>
 
-      {/* Global Stats Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* Departmental Stats Grid */}
+      <section className="space-y-8">
+        <div className="flex items-center space-x-6">
+          <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] whitespace-nowrap">
+            {user?.department || 'Global'} Command Metrics
+          </h2>
+          <div className="h-px w-full bg-slate-100"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="bg-white border border-slate-100 rounded-[3rem] p-10 flex flex-col justify-between group hover:border-indigo-100 transition-all shadow-xl shadow-slate-100/50">
           <div>
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl font-black mb-10 group-hover:scale-110 transition-transform">#</div>
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Academic Subjects</h3>
             <div className="text-5xl font-black text-slate-900 tracking-tighter italic">{subjectCount}</div>
           </div>
-          <Link href="/admin/subjects" className="mt-10 text-[10px] font-black text-indigo-600 uppercase tracking-widest">Open Archive →</Link>
+          <Link href="/admin-panel/subjects" className="mt-10 text-[10px] font-black text-indigo-600 uppercase tracking-widest">Open Archive →</Link>
         </div>
 
         <div className="bg-white border border-slate-100 rounded-[3rem] p-10 flex flex-col justify-between group hover:border-amber-100 transition-all shadow-xl shadow-slate-100/50">
@@ -126,7 +137,7 @@ export default function AdminPage() {
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Pending Review</h3>
             <div className="text-5xl font-black text-slate-900 tracking-tighter italic">{pendingCount}</div>
           </div>
-          <Link href="/admin/requests" className="mt-10 text-[10px] font-black text-amber-600 uppercase tracking-widest">Adjudicate Now →</Link>
+          <Link href="/admin-panel/requests" className="mt-10 text-[10px] font-black text-amber-600 uppercase tracking-widest">Adjudicate Now →</Link>
         </div>
 
         <div className="bg-white border border-slate-100 rounded-[3rem] p-10 flex flex-col justify-between group hover:border-emerald-100 transition-all shadow-xl shadow-slate-100/50">
@@ -135,10 +146,8 @@ export default function AdminPage() {
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Pending Certs</h3>
             <div className="text-5xl font-black text-slate-900 tracking-tighter italic">{pendingCerts}</div>
           </div>
-          <Link href="/admin/certifications" className="mt-10 text-[10px] font-black text-emerald-600 uppercase tracking-widest">Verify Nodes →</Link>
+          <Link href="/admin-panel/certifications" className="mt-10 text-[10px] font-black text-emerald-600 uppercase tracking-widest">Verify Nodes →</Link>
         </div>
-
-       
 
         <Card className="border-none shadow-xl shadow-slate-100/50 bg-white rounded-[3rem] overflow-hidden">
            <CardHeader className="p-10 pb-4">
@@ -171,6 +180,7 @@ export default function AdminPage() {
               </div>
            </CardContent>
         </Card>
+        </div>
       </section>
 
       {/* Control Nodes */}
@@ -203,42 +213,7 @@ export default function AdminPage() {
         </div>
       </section>
 
-      {/* Maintenance Section */}
-      <section className="space-y-10">
-        <div className="flex items-center space-x-6">
-          <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] whitespace-nowrap">
-            System Maintenance
-          </h2>
-          <div className="h-px w-full bg-slate-100"></div>
-        </div>
-
-        <Card className="border-none shadow-xl shadow-slate-200/40 p-10 bg-white rounded-[3rem]">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-            <div>
-              <h3 className="text-xl font-black uppercase tracking-tight mb-2 text-slate-900">Department Migration Protocol</h3>
-              <p className="text-slate-500 font-medium text-sm leading-relaxed max-w-xl">
-                Executes a system-wide update to categorize existing Semester 6 subjects under the <span className="text-indigo-600 font-bold">CSE</span> node. This ensures backward compatibility with new department-aware routing.
-              </p>
-            </div>
-            <div className="flex flex-col items-center gap-4">
-              <Button 
-                onClick={handleMigration} 
-                disabled={migrating}
-                className={`px-10 py-5 rounded-2xl font-black uppercase text-xs tracking-widest ${
-                  migrating ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white hover:bg-slate-800'
-                }`}
-              >
-                {migrating ? 'Executing...' : 'Run Migration'}
-              </Button>
-              {migrationResult && (
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 italic">
-                  {migrationResult}
-                </span>
-              )}
-            </div>
-          </div>
-        </Card>
-      </section>
+     
     </div>
   );
 }

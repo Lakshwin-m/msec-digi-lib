@@ -42,6 +42,7 @@ export default function NewCertificationPage() {
         studentUid: user.uid,
         studentId: user.registerNumber,
         studentName: user.name,
+        department: user.department,
         subject,
         certificateTitle: title,
         platform,

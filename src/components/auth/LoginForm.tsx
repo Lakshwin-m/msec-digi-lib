@@ -6,11 +6,16 @@ import { signInWithRegisterNumber, signInWithGoogle } from '@/lib/firebase/auth'
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
-export const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  forceAdmin?: boolean;
+  hideToggle?: boolean;
+}
+
+export const LoginForm: React.FC<LoginFormProps> = ({ forceAdmin = false, hideToggle = false }) => {
   const router = useRouter();
   const [registerNumber, setRegisterNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'admin'>('student');
+  const [role, setRole] = useState<'student' | 'admin'>(forceAdmin ? 'admin' : 'student');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +26,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await signInWithRegisterNumber(registerNumber, password);
-      router.push('/dashboard');
+      router.push(role === 'admin' ? '/admin-panel' : '/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -42,30 +47,32 @@ export const LoginForm: React.FC = () => {
         </div>
       )}
 
-      <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100 mb-8">
-        <button
-          type="button"
-          onClick={() => setRole('student')}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            role === 'student'
-              ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-              : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          Student
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole('admin')}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            role === 'admin'
-              ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-              : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          Admin
-        </button>
-      </div>
+      {!forceAdmin && !hideToggle && (
+        <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100 mb-8">
+          <button
+            type="button"
+            onClick={() => setRole('student')}
+            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              role === 'student'
+                ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Student
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('admin')}
+            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              role === 'admin'
+                ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            Admin
+          </button>
+        </div>
+      )}
 
       <Input
         label="Register Number"
@@ -110,8 +117,9 @@ export const LoginForm: React.FC = () => {
         onClick={async () => {
           setError('');
           try {
-            await signInWithGoogle();
-            router.push('/dashboard');
+            await signInWithGoogle(forceAdmin ? 'admin' : 'student');
+            // Google user role might be resolved in AuthContext, but for immediate redirect:
+            router.push(forceAdmin ? '/admin-panel' : '/dashboard');
           } catch (err: any) {
             setError(err.message);
           }
